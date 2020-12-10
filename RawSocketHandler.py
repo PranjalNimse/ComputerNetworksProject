@@ -1,7 +1,6 @@
 import sys
 import socket
 import signal
-# import ip, tcp
 import struct
 
 class RawSocketHandler:
@@ -130,6 +129,8 @@ class RawSocketHandler:
         tcp_offset_res = (tcp_doff << 4) + 0
         tcp_flags = tcp_fin + (tcp_syn << 1) + (tcp_rst << 2) + (tcp_psh << 3) + (tcp_ack << 4) + (tcp_urg << 5)
         self.tcpFlags = tcp_flags
+
+        print(tcp_flags);
 
         # the ! in the pack format string means network order
         tcp_header = struct.pack('!HHLLBBHHH', tcp_source, tcp_dest, tcp_seq, tcp_ack_seq, tcp_offset_res, tcp_flags, tcp_window,
@@ -290,6 +291,10 @@ class RawSocketHandler:
         - ACK = 1 when packet sent is an ACK
         - FIN = 1 when packet sent is to terminate connection
         '''
+        if tcp_flags == 1:
+            self.isFin = True
+        elif tcp_flags == 16:
+            self.isAckPacket = True
 
         # for verifying tcp checksum
         # constructing the pseudo header
