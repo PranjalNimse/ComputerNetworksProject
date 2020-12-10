@@ -18,7 +18,7 @@ class TCPFileReceiver:
         self.configure()
 
         while self.socket.isConnectionClosed():
-            self.writeData()
+            self.file.writeData()
 
         print("Done receiving")
         self.cleanUp()
@@ -32,3 +32,6 @@ class TCPFileReceiver:
             print("Error configuring receiver!")
             print(str(e))
             sys.exit()
+            
+    def isConnectionClosed():
+        pass

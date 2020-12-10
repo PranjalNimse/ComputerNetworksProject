@@ -1,8 +1,17 @@
 import os
 import sys
+import TCPFileTransfer
+import TCPFileReceiver
+import TCPFileSender
+import RawSocketHandler
 
 
 class FileHandler:
+
+    # receive 4096 bytes each time
+    BUFFER_SIZE = 4096
+    SEPARATOR = "<SEPARATOR>"
+
     def __init__(self, filename, mode):
         self.filename = filename
         self.mode = mode
@@ -14,6 +23,11 @@ class FileHandler:
         self.chunkSize = 512
         self.isLastPacketEmpty = False
         self.lastChunkSize = 0
+        self.sender = None
+        self.receiver = None
+        self.BUFFER_SIZE = 4096
+        self.SEPARATOR = "<SEPARATOR>"
+        self.client_socket = None
 
     def open(self):
         if self.mode == 'send':
@@ -65,3 +79,31 @@ class FileHandler:
         self.offset += self.chunkSize
 
         return data
+
+    def writeData(self):
+
+        mode, ip_address, filename = TCPFileTransfer.parseArgs(sys.argv)
+
+        if mode == 'send':
+            self.sender = TCPFileSender(ip_address, filename)
+            self.client_socket = self.sender.socket
+
+        elif mode == 'receive':
+            self.receiver = TCPFileReceiver(ip_address, filename)
+            self.client_socket = self.receiver.socket
+
+        else:
+            print(f"Un-Supported mode: {mode}")
+            sys.exit()
+
+        with open(filename, "wb") as f:
+            bytes_read = self.client_socket.recv(self.BUFFER_SIZE)
+
+            if not bytes_read:
+                # nothing is received
+                # file transmitting is done
+                pass
+            # write to the file the bytes we just received
+            f.write(bytes_read)
+
+        self.client_socket.close()
