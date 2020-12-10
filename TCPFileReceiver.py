@@ -5,7 +5,6 @@ import time
 import FileHandler
 import RawSocketHandler
 
-
 class TCPFileReceiver:
     def __init__(self, source_ip, output_file, mode):
         self.source_ip = source_ip
@@ -14,14 +13,21 @@ class TCPFileReceiver:
         self.file.open()
         self.socket = RawSocketHandler(self.source_ip, mode)
 
+
     def receiveData(self):
         self.configure()
 
-        while self.socket.isConnectionClosed():
-            self.file.writeData()
+        while True:
+            data = self.socket.receiveData()
+            if self.socket.isConnectionClosed():
+                break
+
+            self.file.writeData(data)
+            self.socket.sendAck()
 
         print("Done receiving")
         self.cleanUp()
+
 
     def configure(self):
         try:
@@ -32,6 +38,8 @@ class TCPFileReceiver:
             print("Error configuring receiver!")
             print(str(e))
             sys.exit()
-            
-    def isConnectionClosed():
-        pass
+
+
+    def cleanUp(self):
+        self.file.close()
+        self.socket.close()
