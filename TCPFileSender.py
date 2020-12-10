@@ -36,4 +36,5 @@ class TCPFileSender:
 
     def cleanup(self):
         self.file.close()
+        self.socket.shutdown()
         self.socket.close()

@@ -1,6 +1,7 @@
 import os
 import sys
 
+
 class FileHandler:
     def __init__(self, filename, mode):
         self.filename = filename
@@ -24,7 +25,8 @@ class FileHandler:
                 if self.fsize % self.chunkSize == 0:
                     self.isLastPacketEmpty = True
                 else:
-                    self.lastChunkSize = self.fsize - (self.totalCount * self.chunkSize)
+                    self.lastChunkSize = self.fsize - \
+                        (self.totalCount * self.chunkSize)
                     self.totalCount += 1
 
                 try:
@@ -45,15 +47,12 @@ class FileHandler:
                 print(str(e))
                 sys.exit()
 
-
     def close(self):
         if self.fd:
             self.fd.close()
 
-
     def dataToSend(self):
         return self.currentCount <= self.totalCount
-
 
     def readNextData(self):
         self.currentCount += 1
@@ -66,4 +65,3 @@ class FileHandler:
         self.offset += self.chunkSize
 
         return data
-
