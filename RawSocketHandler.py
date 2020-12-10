@@ -151,7 +151,7 @@ class RawSocketHandler:
         pseudoHeader = pack('!4s4sBBH', sourceAddress, destAddress, placeholder, protocol, tcpLength);
         pseudoHeader = pseudoHeader + self.tcpHeader + self.data;
 
-        tcpCheck = checksum(pseudoHeader)
+        tcpCheck = self.checksum(pseudoHeader)
         # print tcp_checksum
 
         # make the tcp header again and fill the correct checksum - remember checksum is NOT in network byte order
