@@ -16,6 +16,7 @@ class FileHandler:
 
     def open(self):
         if self.mode == 'send':
+            print("Opening file in read mode")
             if os.path.exists(self.filename):
 
                 self.fsize = os.stat(self.filename).st_size
@@ -33,12 +34,15 @@ class FileHandler:
                     print("Could not open/read file:", self.filename)
                     print(str(e))
                     sys.exit()
+
+                print("Opened file to read.")
             else:
                 print(self.filename, " : File does not exist.")
                 sys.exit()
 
         elif self.mode == 'receive':
             try:
+                print("Opening file to write")
                 self.fd = open(self.filename, mode='r+b')
             except OSError as e:
                 print("Could not create file:", self.filename)
@@ -56,16 +60,20 @@ class FileHandler:
 
 
     def readNextData(self):
+        print("\nRead next data")
         self.currentCount += 1
         self.fd.seek(self.offset)
         if self.currentCount < self.totalCount:
-            data = bytearray(self.fd.read(self.chunkSize))
+            data = self.fd.read(self.chunkSize)
             isLastChunk = False
         else:   # self.currentCount == self.totalCount
-            data = bytearray(self.fd.read(self.lastChunkSize))
+            data = self.fd.read(self.lastChunkSize)
             isLastChunk = True
 
         self.offset += self.chunkSize
+
+        print(data)
+        print(isLastChunk)
 
         return (data, isLastChunk)
 

@@ -15,6 +15,7 @@ class TCPFileReceiver:
 
 
     def receiveData(self):
+        print("\n\nInside receiveData of TCPFileReceiver")
         self.configure()
         print("Done configuring")
 

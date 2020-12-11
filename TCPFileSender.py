@@ -10,11 +10,11 @@ class TCPFileSender:
         self.destination_ip = destination_ip
         self.inputFileName = input_file
         self.file = FileHandler.FileHandler(input_file, mode)
-        self.file.open()
         self.socket = RawSocketHandler.RawSocketHandler(self.destination_ip, mode)
 
 
     def sendData(self):
+        print("\n\nInside sendData of TCPFileSender")
         self.configure()
         print("Done configuring")
 

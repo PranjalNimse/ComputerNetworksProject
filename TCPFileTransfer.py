@@ -1,3 +1,5 @@
+#!/usr/bin/sudo python
+
 import sys
 import TCPFileSender
 import TCPFileReceiver
