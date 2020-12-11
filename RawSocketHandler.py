@@ -1,6 +1,7 @@
 import sys
 import socket
 import signal
+# import ip, tcp
 import struct
 
 class RawSocketHandler:
@@ -25,19 +26,29 @@ class RawSocketHandler:
         self.response = None
         self.isFin = False
         self.isErrorPacket = True
+        self.connection = None
+        self.sourceAddress = None
+        self.destinationAddress = None
 
 
     def configure(self):
         try:
-            self.sourceIp = socket.gethostbyname(socket.gethostname())
+            self.sourceIp = "localhost"         # socket.gethostbyname(socket.gethostname())
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_RAW)
+            self.sourceAddress = socket.inet_aton(self.sourceIp)
+            self.destinationAddress = socket.inet_aton(self.destinationIp)
 
             if self.mode == 'send':
                 self.destinationPort = self.port_8081
                 self.sourcePort = self.port_8080
+
+                if self.connection is not None:
+                    return
+                self.socket.connect((self.destinationIp, self.destinationPort))
             elif self.mode == 'receive':
                 self.destinationPort = self.port_8080
                 self.sourcePort = self.port_8081
+                self.socket.bind((self.sourceIp, self.sourcePort))
 
             self.ipSeq = 0
             self.sequenceNum = 0
@@ -129,8 +140,6 @@ class RawSocketHandler:
         tcp_offset_res = (tcp_doff << 4) + 0
         tcp_flags = tcp_fin + (tcp_syn << 1) + (tcp_rst << 2) + (tcp_psh << 3) + (tcp_ack << 4) + (tcp_urg << 5)
         self.tcpFlags = tcp_flags
-
-        print(tcp_flags);
 
         # the ! in the pack format string means network order
         tcp_header = struct.pack('!HHLLBBHHH', tcp_source, tcp_dest, tcp_seq, tcp_ack_seq, tcp_offset_res, tcp_flags, tcp_window,
@@ -277,6 +286,7 @@ class RawSocketHandler:
 
         self.sequenceNum = tcph[2]
         self.ackNum = tcph[3]
+        print("SeqNum: ", str(self.sequenceNum), " AckNum: ", str(self.ackNum))
         doff_reserved = tcph[4]
         tcp_flags = tcph[6]
         tcph_length = doff_reserved >> 4
@@ -305,8 +315,8 @@ class RawSocketHandler:
         self.checksum(pseudo_header + tcp_header + self.data)
 
 
-        return [tcph, version, ihl, ttl, protocol, s_addr, d_addr, source_port, dest_port, sequence,
-                acknowledgement, tcph_length, self.data]
+        # return [tcph, version, ihl, ttl, protocol, s_addr, d_addr, source_port, dest_port, sequence,
+        #         acknowledgement, tcph_length, self.data]
 
 
     def isValidPacket(self):
@@ -319,10 +329,11 @@ class RawSocketHandler:
 
     def waitForAck(self):
         while True:
+            print("Waiting for ACK.")
             signal.signal(signal.SIGALRM, self.signalHandler)
             signal.alarm(180)  # 180 seconds
             try:
-                self.response = self.socket.recvfrom(65565)
+                self.response = self.socket.recvfrom(1024)
             except Exception as msg:
                 print("Timed out on receiving ACK for the data sent: ", str(msg))
                 # sys.exit(0)
@@ -338,10 +349,11 @@ class RawSocketHandler:
 
     def receiveData(self):
         while True:
+            print("Waiting to receive data.")
             signal.signal(signal.SIGALRM, self.signalHandler)
             signal.alarm(180)  # 180 seconds
             try:
-                self.response = self.socket.recvfrom(65565)
+                self.response = self.socket.recvfrom(1024)
             except Exception as msg:
                 print("Timed out on receiving the data from sender: ", str(msg))
                 # sys.exit(0)

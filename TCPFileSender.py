@@ -9,18 +9,23 @@ class TCPFileSender:
     def __init__(self, destination_ip, input_file, mode):
         self.destination_ip = destination_ip
         self.inputFileName = input_file
-        self.file = FileHandler(input_file, mode)
+        self.file = FileHandler.FileHandler(input_file, mode)
         self.file.open()
-        self.socket = RawSocketHandler(self.destination_ip, mode)
+        self.socket = RawSocketHandler.RawSocketHandler(self.destination_ip, mode)
 
 
     def sendData(self):
         self.configure()
+        print("Done configuring")
 
         while self.file.dataToSend():
+            print("More data to send")
             self.socket.sendData(self.file.readNextData())
-            self.waitForAck()
+            print("Data sent")
+            self.socket.waitForAck()
+            print("ACK received.")
 
+        print("Cleaning up before closing the application.")
         self.cleanUp()
 
 
